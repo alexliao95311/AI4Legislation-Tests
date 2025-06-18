@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple To-Do List App</title>
+    <style>
+        /* CSS Styles for the To-Do List App */
+        
+        /* Apply a clean font and base styles to the whole document */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Style the main heading */
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        
+        /* Style the container for the app */
+        .todo-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        /* Style the form for adding new tasks */
+        .todo-form {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        /* Style the input field */
+        #task-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+            font-size: 16px;
+        }
+        
+        /* Style the add button */
+        #add-button {
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        #add-button:hover {
+            background-color: #2980b9;
+        }
+        
+        /* Style the task list */
+        .task-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        /* Style each task item */
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        /* Style the checkbox for marking tasks complete */
+        .task-checkbox {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+        }
+        
+        /* Style the task text */
+        .task-text {
+            flex: 1;
+            font-size: 16px;
+        }
+        
+        /* Style for completed tasks - strike-through and gray color */
+        .completed {
+            text-decoration: line-through;
+            color: #888;
+        }
+        
+        /* Style the delete button */
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        /* Style for message when list is empty */
+        .empty-list {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 15px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main container for the to-do app -->
+    <div class="todo-container">
+        <h1>My To-Do List</h1>
+        
+        <!-- Form for adding new tasks -->
+        <div class="todo-form">
+            <input type="text" id="task-input" placeholder="Add a new task...">
+            <button id="add-button">Add</button>
+        </div>
+        
+        <!-- List where tasks will be displayed -->
+        <ul id="task-list" class="task-list">
+            <!-- Tasks will be added here dynamically with JavaScript -->
+            <li class="empty-list">No tasks yet. Add one above!</li>
+        </ul>
+    </div>
+
+    <!-- JavaScript for the To-Do List functionality -->
+    <script>
+        // Wait for the document to fully load before running the JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get references to the HTML elements we'll need to interact with
+            const taskInput = document.getElementById('task-input');
+            const addButton = document.getElementById('add-button');
+            const taskList = document.getElementById('task-list');
+            
+            // Load tasks from localStorage when the page loads
+            loadTasks();
+            
+            // Add event listener to the add button
+            addButton.addEventListener('click', addTask);
+            
+            // Allow pressing Enter in the input field to add a task
+            taskInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addTask();
+                }
+            });
+            
+            /**
+             * Function to add a new task
+             */
+            function addTask() {
+                // Get the task text from the input field
+                const taskText = taskInput.value.trim();
+                
+                // Only add the task if the text isn't empty
+                if (taskText !== '') {
+                    // Remove the "empty list" message if it exists
+                    const emptyMessage = document.querySelector('.empty-list');
+                    if (emptyMessage) {
+                        taskList.removeChild(emptyMessage);
+                    }
+                    
+                    // Create a new task object
+                    const task = {
+                        id: Date.now(), // Use timestamp as a unique ID
+                        text: taskText,
+                        completed: false
+                    };
+                    
+                    // Add the task to the list
+                    createTaskElement(task);
+                    
+                    // Save tasks to localStorage
+                    saveTasks();
+                    
+                    // Clear the input field after adding the task
+                    taskInput.value = '';
+                    
+                    // Focus back on the input field for easy adding of multiple tasks
+                    taskInput.focus();
+                }
+            }
+            
+            /**
+             * Function to create a new task element and add it to the list
+             * @param {Object} task - The task object with id, text, and completed properties
+             */
+            function createTaskElement(task) {
+                // Create the list item element
+                const taskItem = document.createElement('li');
+                taskItem.className = 'task-item';
+                taskItem.dataset.id = task.id; // Store task ID as data attribute
+                
+                // Create checkbox for marking task as complete/incomplete
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'task-checkbox';
+                checkbox.checked = task.completed;
+                
+                // Create span for the task text
+                const taskTextSpan = document.createElement('span');
+                taskTextSpan.className = 'task-text';
+                taskTextSpan.textContent = task.text;
+                
+                // If task is already completed, add the completed class
+                if (task.completed) {
+                    taskTextSpan.classList.add('completed');
+                }
+                
+                // Create delete button
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'delete-btn';
+                deleteButton.textContent = 'Delete';
+                
+                // Add event listener for the checkbox
+                checkbox.addEventListener('change', function() {
+                    toggleTaskCompletion(task.id, this.checked);
+                });
+                
+                // Add event listener for the delete button
+                deleteButton.addEventListener('click', function() {
+                    deleteTask(task.id);
+                });
+                
+                // Add all elements to the list item
+                taskItem.appendChild(checkbox);
+                taskItem.appendChild(taskTextSpan);
+                taskItem.appendChild(deleteButton);
+                
+                // Add the task to the list
+                taskList.appendChild(taskItem);
+            }
+            
+            /**
+             * Function to toggle task completion status
+             * @param {number} taskId - The ID of the task to toggle
+             * @param {boolean} completed - Whether the task is completed or not
+             */
+            function toggleTaskCompletion(taskId, completed) {
+                // Find the task in the DOM
+                const taskItem = document.querySelector(`.task-item[data-id="${taskId}"]`);
+                const taskText = taskItem.querySelector('.task-text');
+                
+                // Toggle the completed class
+                if (completed) {
+                    taskText.classList.add('completed');
+                } else {
+                    taskText.classList.remove('completed');
+                }
+                
+                // Save the updated tasks
+                saveTasks();
+            }
+            
+            /**
+             * Function to delete a task
+             * @param {number} taskId - The ID of the task to delete
+             */
+            function deleteTask(taskId) {
+                // Find the task element by ID and remove it
+                const taskItem = document.querySelector(`.task-item[data-id="${taskId}"]`);
+                taskList.removeChild(taskItem);
+                
+                // Save the updated tasks
+                saveTasks();
+                
+                // If there are no more tasks, show the empty message
+                if (taskList.children.length === 0) {
+                    const emptyMessage = document.createElement('li');
+                    emptyMessage.className = 'empty-list';
+                    emptyMessage.textContent = 'No tasks yet. Add one above!';
+                    taskList.appendChild(emptyMessage);
+                }
+            }
+            
+            /**
+             * Function to save tasks to localStorage
+             */
+            function saveTasks() {
+                // Create an array to store all tasks
+                const tasks = [];
+                
+                // Get all task items from the DOM
+                const taskItems = document.querySelectorAll('.task-item');
+                
+                // Loop through each task item and add it to the tasks array
+                taskItems.forEach(function(taskItem) {
+                    const taskId = parseInt(taskItem.dataset.id);
+                    const taskText = taskItem.querySelector('.task-text').textContent;
+                    const completed = taskItem.querySelector('.task-checkbox').checked;
+                    
+                    tasks.push({
+                        id: taskId,
+                        text: taskText,
+                        completed: completed
+                    });
+                });
+                
+                // Save the tasks array to localStorage as a JSON string
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            }
+            
+            /**
+             * Function to load tasks from localStorage
+             */
+            function loadTasks() {
+                // Get the tasks from localStorage
+                const savedTasks = localStorage.getItem('tasks');
+                
+                // If there are saved tasks, parse them and add them to the list
+                if (savedTasks) {
+                    const tasks = JSON.parse(savedTasks);
+                    
+                    // If there are tasks, clear the empty message
+                    if (tasks.length > 0) {
+                        taskList.innerHTML = '';
+                        
+                        // Add each task to the list
+                        tasks.forEach(function(task) {
+                            createTaskElement(task);
+                        });
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
