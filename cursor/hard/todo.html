@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Todo App</title>
+    <style>
+        /* CSS STYLING - Making the app look clean and modern */
+        
+        /* Reset default browser styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* Body styling with a nice background */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        /* Main container styling */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        /* Header styling */
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        /* Input section styling */
+        .input-section {
+            padding: 30px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Input field styling */
+        #taskInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        #taskInput:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+        
+        /* Button styling */
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        /* Todo list styling */
+        .todo-list {
+            padding: 30px;
+        }
+        
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #4facfe;
+            transition: all 0.3s ease;
+        }
+        
+        .todo-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Completed task styling */
+        .todo-item.completed {
+            background: #e8f5e8;
+            border-left-color: #28a745;
+            opacity: 0.7;
+        }
+        
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: #666;
+        }
+        
+        /* Checkbox styling */
+        .todo-checkbox {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        /* Todo text styling */
+        .todo-text {
+            flex: 1;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        /* Delete button styling */
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        
+        .btn-delete:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+        
+        /* Empty state styling */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .empty-state p {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- MAIN CONTAINER -->
+    <div class="container">
+        <!-- HEADER SECTION -->
+        <div class="header">
+            <h1>📝 Todo App</h1>
+            <p>Organize your tasks and boost your productivity!</p>
+        </div>
+        
+        <!-- INPUT SECTION - Where users add new tasks -->
+        <div class="input-section">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="taskInput" 
+                    placeholder="Enter a new task..."
+                    maxlength="100"
+                >
+                <button class="btn btn-primary" onclick="addTask()">Add Task</button>
+            </div>
+        </div>
+        
+        <!-- TODO LIST SECTION - Where tasks are displayed -->
+        <div class="todo-list" id="todoList">
+            <!-- Tasks will be added here dynamically -->
+            <div class="empty-state">
+                <p>🎉 No tasks yet!</p>
+                <p>Add your first task above to get started.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT - The brain of our app -->
+    <script>
+        // ============================================
+        // JAVASCRIPT EXPLANATION FOR BEGINNERS
+        // ============================================
+        
+        // VARIABLES - Storing important data
+        let tasks = []; // Array to store all our tasks
+        let taskIdCounter = 0; // Counter to give each task a unique ID
+        
+        // DOM ELEMENTS - Getting references to HTML elements
+        const taskInput = document.getElementById('taskInput'); // The input field
+        const todoList = document.getElementById('todoList'); // The container for tasks
+        
+        // ============================================
+        // MAIN FUNCTIONS
+        // ============================================
+        
+        /**
+         * ADD TASK FUNCTION
+         * This function adds a new task to our list
+         */
+        function addTask() {
+            // Get the text from the input field and trim whitespace
+            const taskText = taskInput.value.trim();
+            
+            // VALIDATION - Check if the input is not empty
+            if (taskText === '') {
+                alert('Please enter a task!');
+                return; // Stop the function here
+            }
+            
+            // Create a new task object with all the information we need
+            const newTask = {
+                id: taskIdCounter++, // Give it a unique ID
+                text: taskText,      // The task text
+                completed: false,    // Whether it's done or not
+                createdAt: new Date() // When it was created
+            };
+            
+            // Add the new task to our tasks array
+            tasks.push(newTask);
+            
+            // Clear the input field for the next task
+            taskInput.value = '';
+            
+            // Update the display to show the new task
+            renderTasks();
+            
+            // Save tasks to localStorage (so they persist when page refreshes)
+            saveTasks();
+        }
+        
+        /**
+         * TOGGLE TASK COMPLETION FUNCTION
+         * This function marks a task as complete or incomplete
+         */
+        function toggleTask(taskId) {
+            // Find the task in our array by its ID
+            const task = tasks.find(t => t.id === taskId);
+            
+            // If we found the task, toggle its completed status
+            if (task) {
+                task.completed = !task.completed; // Switch from true to false or vice versa
+                
+                // Update the display and save to localStorage
+                renderTasks();
+                saveTasks();
+            }
+        }
+        
+        /**
+         * DELETE TASK FUNCTION
+         * This function removes a task from our list
+         */
+        function deleteTask(taskId) {
+            // Ask user for confirmation before deleting
+            if (confirm('Are you sure you want to delete this task?')) {
+                // Remove the task from our array
+                tasks = tasks.filter(t => t.id !== taskId);
+                
+                // Update the display and save to localStorage
+                renderTasks();
+                saveTasks();
+            }
+        }
+        
+        /**
+         * RENDER TASKS FUNCTION
+         * This function displays all tasks on the screen
+         */
+        function renderTasks() {
+            // If there are no tasks, show the empty state
+            if (tasks.length === 0) {
+                todoList.innerHTML = `
+                    <div class="empty-state">
+                        <p>🎉 No tasks yet!</p>
+                        <p>Add your first task above to get started.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Create HTML for each task
+            const tasksHTML = tasks.map(task => `
+                <div class="todo-item ${task.completed ? 'completed' : ''}">
+                    <input 
+                        type="checkbox" 
+                        class="todo-checkbox"
+                        ${task.completed ? 'checked' : ''}
+                        onchange="toggleTask(${task.id})"
+                    >
+                    <span class="todo-text">${escapeHtml(task.text)}</span>
+                    <button class="btn btn-delete" onclick="deleteTask(${task.id})">
+                        Delete
+                    </button>
+                </div>
+            `).join('');
+            
+            // Put all the task HTML into the todo list container
+            todoList.innerHTML = tasksHTML;
+        }
+        
+        /**
+         * SAVE TASKS FUNCTION
+         * This function saves tasks to the browser's localStorage
+         */
+        function saveTasks() {
+            // Convert our tasks array to a string and save it
+            localStorage.setItem('todoTasks', JSON.stringify(tasks));
+        }
+        
+        /**
+         * LOAD TASKS FUNCTION
+         * This function loads tasks from localStorage when the page loads
+         */
+        function loadTasks() {
+            // Get the saved tasks from localStorage
+            const savedTasks = localStorage.getItem('todoTasks');
+            
+            // If there are saved tasks, load them
+            if (savedTasks) {
+                tasks = JSON.parse(savedTasks);
+                // Update the counter to avoid ID conflicts
+                taskIdCounter = Math.max(...tasks.map(t => t.id), -1) + 1;
+                renderTasks();
+            }
+        }
+        
+        /**
+         * ESCAPE HTML FUNCTION
+         * This function prevents XSS attacks by escaping special characters
+         */
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // ============================================
+        // EVENT LISTENERS - Making the app interactive
+        // ============================================
+        
+        // Allow users to press Enter to add a task
+        taskInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                addTask();
+            }
+        });
+        
+        // ============================================
+        // INITIALIZATION - Set up the app when it loads
+        // ============================================
+        
+        // Load any saved tasks when the page loads
+        loadTasks();
+        
+        // Focus the input field so users can start typing immediately
+        taskInput.focus();
+        
+        // ============================================
+        // HOW THE APP WORKS - Step by step explanation
+        // ============================================
+        
+        /*
+        STEP-BY-STEP HOW THE APP WORKS:
+        
+        1. PAGE LOADS:
+           - HTML structure is created
+           - CSS styles are applied
+           - JavaScript loads and runs loadTasks()
+           - Any previously saved tasks are loaded from localStorage
+           - Input field gets focus
+        
+        2. USER ADDS A TASK:
+           - User types in the input field
+           - User clicks "Add Task" or presses Enter
+           - addTask() function runs:
+             * Gets the text from input
+             * Validates it's not empty
+             * Creates a new task object with unique ID
+             * Adds it to the tasks array
+             * Clears the input field
+             * Calls renderTasks() to update the display
+             * Calls saveTasks() to save to localStorage
+        
+        3. USER TOGGLES A TASK:
+           - User clicks the checkbox
+           - toggleTask() function runs:
+             * Finds the task by ID
+             * Toggles the completed status
+             * Updates the display
+             * Saves to localStorage
+        
+        4. USER DELETES A TASK:
+           - User clicks the "Delete" button
+           - deleteTask() function runs:
+             * Shows confirmation dialog
+             * If confirmed, removes task from array
+             * Updates the display
+             * Saves to localStorage
+        
+        5. DISPLAY UPDATES:
+           - renderTasks() function runs:
+             * Checks if there are any tasks
+             * If no tasks, shows empty state
+             * If tasks exist, creates HTML for each task
+             * Puts the HTML into the page
+        
+        KEY CONCEPTS USED:
+        - Variables and arrays to store data
+        - Functions to organize code
+        - DOM manipulation to update the page
+        - Event listeners to handle user interactions
+        - localStorage to persist data
+        - CSS classes for styling
+        - Template literals for creating HTML
+        - Array methods like map(), filter(), find()
+        - Conditional statements for logic
+        - String methods like trim()
+        */
+    </script>
+</body>
+</html> 
