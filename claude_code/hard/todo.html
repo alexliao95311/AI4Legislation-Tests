@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple To-Do List</title>
+    <style>
+        /* Reset and basic styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Main container styling */
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        /* Header styling */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        /* Input section styling */
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .task-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .task-input:focus {
+            border-color: #667eea;
+        }
+
+        .add-btn {
+            padding: 15px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .add-btn:hover {
+            background: #5a67d8;
+        }
+
+        /* Task list styling */
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Completed task styling */
+        .task-item.completed {
+            background: #e8f5e8;
+            border-color: #c3e6c3;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #666;
+        }
+
+        /* Checkbox styling */
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        /* Task text styling */
+        .task-text {
+            flex: 1;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        /* Delete button styling */
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+
+        /* Empty state styling */
+        .empty-state {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px 20px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .input-section {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main container for the entire app -->
+    <div class="container">
+        <!-- Header section with title and description -->
+        <div class="header">
+            <h1>📝 To-Do List</h1>
+            <p>Stay organized and productive!</p>
+        </div>
+
+        <!-- Input section for adding new tasks -->
+        <div class="input-section">
+            <input 
+                type="text" 
+                class="task-input" 
+                placeholder="Enter a new task..." 
+                id="taskInput"
+                maxlength="100"
+            >
+            <button class="add-btn" onclick="addTask()">Add Task</button>
+        </div>
+
+        <!-- List container where all tasks will be displayed -->
+        <ul class="task-list" id="taskList">
+            <!-- Tasks will be added here dynamically -->
+        </ul>
+    </div>
+
+    <script>
+        // Array to store all our tasks
+        // Each task will be an object with: id, text, completed status
+        let tasks = [];
+        
+        // Counter to give each task a unique ID
+        let taskIdCounter = 1;
+
+        /**
+         * Function to add a new task
+         * This function is called when the "Add Task" button is clicked
+         */
+        function addTask() {
+            // Get the input element and its value
+            const taskInput = document.getElementById('taskInput');
+            const taskText = taskInput.value.trim(); // trim() removes extra spaces
+            
+            // Check if the input is not empty
+            if (taskText === '') {
+                alert('Please enter a task!');
+                return; // Exit the function if input is empty
+            }
+            
+            // Create a new task object
+            const newTask = {
+                id: taskIdCounter++,  // Assign unique ID and increment counter
+                text: taskText,       // The task description
+                completed: false      // New tasks start as incomplete
+            };
+            
+            // Add the new task to our tasks array
+            tasks.push(newTask);
+            
+            // Clear the input field for the next task
+            taskInput.value = '';
+            
+            // Update the display to show the new task
+            renderTasks();
+        }
+
+        /**
+         * Function to toggle a task's completion status
+         * @param {number} taskId - The ID of the task to toggle
+         */
+        function toggleTask(taskId) {
+            // Find the task with the matching ID
+            const task = tasks.find(t => t.id === taskId);
+            
+            // If task is found, toggle its completed status
+            if (task) {
+                task.completed = !task.completed;
+                renderTasks(); // Update the display
+            }
+        }
+
+        /**
+         * Function to delete a task
+         * @param {number} taskId - The ID of the task to delete
+         */
+        function deleteTask(taskId) {
+            // Filter out the task with the matching ID
+            // This creates a new array without the deleted task
+            tasks = tasks.filter(t => t.id !== taskId);
+            
+            // Update the display
+            renderTasks();
+        }
+
+        /**
+         * Function to render (display) all tasks on the page
+         * This function rebuilds the entire task list HTML
+         */
+        function renderTasks() {
+            // Get the task list container element
+            const taskList = document.getElementById('taskList');
+            
+            // Clear the current content
+            taskList.innerHTML = '';
+            
+            // Check if there are no tasks
+            if (tasks.length === 0) {
+                // Show empty state message
+                taskList.innerHTML = '<li class="empty-state">No tasks yet. Add one above!</li>';
+                return;
+            }
+            
+            // Loop through each task and create HTML for it
+            tasks.forEach(task => {
+                // Create a list item element for each task
+                const listItem = document.createElement('li');
+                
+                // Add CSS classes based on task status
+                listItem.className = `task-item ${task.completed ? 'completed' : ''}`;
+                
+                // Set the HTML content for the task item
+                // This includes checkbox, text, and delete button
+                listItem.innerHTML = `
+                    <input 
+                        type="checkbox" 
+                        class="task-checkbox" 
+                        ${task.completed ? 'checked' : ''} 
+                        onchange="toggleTask(${task.id})"
+                    >
+                    <span class="task-text">${escapeHtml(task.text)}</span>
+                    <button class="delete-btn" onclick="deleteTask(${task.id})">Delete</button>
+                `;
+                
+                // Add the task item to the task list
+                taskList.appendChild(listItem);
+            });
+        }
+
+        /**
+         * Function to escape HTML characters to prevent XSS attacks
+         * This ensures user input is safe to display
+         * @param {string} text - The text to escape
+         * @return {string} - The escaped text
+         */
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        /**
+         * Event listener for the Enter key in the input field
+         * This allows users to add tasks by pressing Enter
+         */
+        document.getElementById('taskInput').addEventListener('keypress', function(event) {
+            // Check if the pressed key is Enter (key code 13)
+            if (event.key === 'Enter') {
+                addTask(); // Call the addTask function
+            }
+        });
+
+        // Initialize the app by rendering the (empty) task list
+        renderTasks();
+    </script>
+</body>
+</html>
